@@ -25,6 +25,8 @@ import 'rxjs/add/operator/takeWhile';
 import 'rxjs/add/operator/concat';
 import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/multicast';
+import 'rxjs/add/operator/repeat';
+import 'rxjs/add/operator/timeout';
 
 @Component({
   selector: 'my-app',
@@ -65,9 +67,47 @@ export class AppComponent {
         () => console.log('done')
       );
   }
+  
+  public getObsRepeat() {
+    let currentProgress = 0;
+    return this.http.get('https://jsonplaceholder.typicode.com/posts/1')
+      .map(res => res['title'])
+      .switchMap(_ => {
+        return this.http.get('https://jsonplaceholder.typicode.com/posts/2')
+          .map(res => {
+            currentProgress++;
+            return res['body'];
+          })
+          .timeout(10000)
+          .delay(100)
+          .repeat()
+          .multicast(
+            () => new ReplaySubject(1),
+            subject => subject.takeWhile(_ => currentProgress < 10.0).concat(subject.take(1))
+          )
+          .switchMap(_ => {
+            if (currentProgress === 10) {
+              return this.http.get('https://jsonplaceholder.typicode.com/posts/3');
+            }
+            return Observable.of(currentProgress);
+          });
+      });
+  }
+
+  repeatPoll() {
+    const obs = Observable.forkJoin(this.getObsRepeat(), this.getObsRepeat());
+    // const obs = this.getObsRepeat();
+    const subscribe = obs
+      .subscribe(
+        res => console.log(JSON.parse(res[0]['_body']), JSON.parse(res[1]['_body'])),
+        err => console.error(err),
+        () => console.log('repeat poll done')
+      );
+  }
 
   ngOnInit() {
-    this.timerPoll();
+    // this.timerPoll();
+    this.repeatPoll();
 
     /*
     this.http.get('https://jsonplaceholder.typicode.com/posts/1').subscribe(
