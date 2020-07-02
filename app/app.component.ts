@@ -27,6 +27,7 @@ import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/multicast';
 import 'rxjs/add/operator/repeat';
 import 'rxjs/add/operator/timeout';
+import 'rxjs/add/operator/distinctUntilChanged';
 
 @Component({
   selector: 'my-app',
@@ -34,6 +35,11 @@ import 'rxjs/add/operator/timeout';
   styleUrls: [ './app.component.css' ]
 })
 export class AppComponent {
+  private buildProgress = { source: new BehaviorSubject<number>(0) };
+  private packageProgress = { source: new BehaviorSubject<number>(0) };
+  private buildProgressVal = this.buildProgress.source.asObservable().distinctUntilChanged();
+  private packageProgressVal = this.packageProgress.source.asObservable().distinctUntilChanged();
+
   constructor(private http: Http) { }
   
   public getObsTimer() {
@@ -67,10 +73,14 @@ export class AppComponent {
         () => console.log('done')
       );
   }
+
+  public getObs() {
+    return this.getObsRepeat('https://jsonplaceholder.typicode.com/posts/1', this.buildProgress);
+  }
   
-  public getObsRepeat() {
+  public getObsRepeat(sourceUrl, progress) {
     let currentProgress = 0;
-    return this.http.get('https://jsonplaceholder.typicode.com/posts/1')
+    return this.http.get(sourceUrl)
       .map(res => res['title'])
       .switchMap(_ => {
         return this.http.get('https://jsonplaceholder.typicode.com/posts/2')
@@ -95,7 +105,7 @@ export class AppComponent {
   }
 
   repeatPoll() {
-    const obs = Observable.forkJoin(this.getObsRepeat(), this.getObsRepeat());
+    const obs = Observable.forkJoin(this.getObs(), this.getObs());
     // const obs = this.getObsRepeat();
     const subscribe = obs
       .subscribe(
