@@ -20,3 +20,5 @@ import 'rxjs/add/operator/multicast';
 import 'rxjs/add/operator/repeat';
 import 'rxjs/add/operator/timeout';
 import 'rxjs/add/operator/distinctUntilChanged';
+import 'rxjs/add/operator/expand';
+import 'rxjs/add/operator/do';

@@ -93,7 +93,7 @@ export class AppComponent {
         () => console.log('repeat poll done')
       );
   }
-
+  
   ngOnInit() {
   }
 }
