@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Http } from '@angular/http';
 
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
@@ -31,9 +32,9 @@ import 'rxjs/add/operator/multicast';
   styleUrls: [ './app.component.css' ]
 })
 export class AppComponent {
-  constructor() { }
+  constructor(private http: Http) { }
   
-  public getObs() {
+  public getObsTimer() {
     let currentProgress = 0;
     return Observable.of('backend first call')
       .switchMap(_ => {
@@ -43,8 +44,7 @@ export class AppComponent {
             subject => subject.takeWhile(_ => currentProgress < 10).concat(subject.take(1))
           )
           .exhaustMap(_ => {
-            // return Observable.of('backend second call')
-            return Observable.empty()
+            return Observable.of('backend second call')
               .switchMap(response => {
                 if (currentProgress === 10) {
                   return Observable.of('backend result call');
@@ -56,8 +56,8 @@ export class AppComponent {
       });
   }
 
-  initiateCall() {
-    const obs = Observable.forkJoin(this.getObs(), this.getObs());
+  timerPoll() {
+    const obs = Observable.forkJoin(this.getObsTimer(), this.getObsTimer());
     const subscribe = obs
       .subscribe(
         res => console.log(res),
@@ -67,6 +67,14 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    this.initiateCall();
+    this.timerPoll();
+
+    /*
+    this.http.get('https://jsonplaceholder.typicode.com/posts/1').subscribe(
+      res => console.log(res),
+      err => console.log(err),
+      () => console.log('http done')
+    );
+    */
   }
 }
