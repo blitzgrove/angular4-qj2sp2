@@ -7,27 +7,7 @@ import { ReplaySubject } from 'rxjs/ReplaySubject';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Subscription } from 'rxjs/Subscription';
 
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/forkJoin';
-import 'rxjs/add/observable/timer';
-import 'rxjs/add/observable/empty';
-
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/filter';
-import 'rxjs/add/operator/concatMap';
-import 'rxjs/add/operator/mergeMap';
-import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/exhaustMap';
-import 'rxjs/add/operator/take';
-import 'rxjs/add/operator/takeWhile';
-import 'rxjs/add/operator/concat';
-import 'rxjs/add/operator/delay';
-import 'rxjs/add/operator/multicast';
-import 'rxjs/add/operator/repeat';
-import 'rxjs/add/operator/timeout';
-import 'rxjs/add/operator/distinctUntilChanged';
+import './operators/rxjs';
 
 @Component({
   selector: 'my-app',
@@ -44,7 +24,7 @@ export class AppComponent {
   
   public getObsTimer() {
     let currentProgress = 0;
-    return Observable.of('backend first call')
+    return this.http.get('https://jsonplaceholder.typicode.com/posts/1')
       .switchMap(_ => {
         return Observable.timer(0, 100)
           .multicast(
@@ -52,10 +32,10 @@ export class AppComponent {
             subject => subject.takeWhile(_ => currentProgress < 10).concat(subject.take(1))
           )
           .exhaustMap(_ => {
-            return Observable.of('backend second call')
+            return this.http.get('https://jsonplaceholder.typicode.com/posts/2')
               .switchMap(response => {
                 if (currentProgress === 10) {
-                  return Observable.of('backend result call');
+                  return this.http.get('https://jsonplaceholder.typicode.com/posts/3');
                 }
                 currentProgress++;
                 return Observable.of(currentProgress);
@@ -68,14 +48,10 @@ export class AppComponent {
     const obs = Observable.forkJoin(this.getObsTimer(), this.getObsTimer());
     const subscribe = obs
       .subscribe(
-        res => console.log(res),
+        res => console.log(JSON.parse(res[0]['_body']), JSON.parse(res[1]['_body'])),
         err => console.error(err),
-        () => console.log('done')
+        () => console.log('timer poll done')
       );
-  }
-
-  public getObs() {
-    return this.getObsRepeat('https://jsonplaceholder.typicode.com/posts/1', this.buildProgress);
   }
   
   public getObsRepeat(sourceUrl, progress) {
@@ -104,9 +80,12 @@ export class AppComponent {
       });
   }
 
+  public getObs() {
+    return this.getObsRepeat('https://jsonplaceholder.typicode.com/posts/1', this.buildProgress);
+  }
+
   repeatPoll() {
     const obs = Observable.forkJoin(this.getObs(), this.getObs());
-    // const obs = this.getObsRepeat();
     const subscribe = obs
       .subscribe(
         res => console.log(JSON.parse(res[0]['_body']), JSON.parse(res[1]['_body'])),
@@ -116,15 +95,5 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    // this.timerPoll();
-    this.repeatPoll();
-
-    /*
-    this.http.get('https://jsonplaceholder.typicode.com/posts/1').subscribe(
-      res => console.log(res),
-      err => console.log(err),
-      () => console.log('http done')
-    );
-    */
   }
 }
