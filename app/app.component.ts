@@ -95,5 +95,17 @@ export class AppComponent {
   }
   
   ngOnInit() {
+    Observable.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+      .concatMap(v => Observable.of(v).delay(1000))
+      .takeWhile(v => v < 5)
+      .switchMap(v => {
+        console.log(v);
+        return Observable.of(`Value: ${v}`)
+      })
+      .subscribe(
+        res => console.log(res),
+        err => console.error(err),
+        () => console.log('done')
+      );
   }
 }

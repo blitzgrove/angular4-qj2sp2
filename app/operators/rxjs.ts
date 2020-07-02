@@ -3,6 +3,7 @@ import 'rxjs/add/observable/of';
 import 'rxjs/add/observable/forkJoin';
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/observable/empty';
+import 'rxjs/add/observable/from';
 
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/catch';
