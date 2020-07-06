@@ -15,6 +15,8 @@ import './operators/rxjs';
   styleUrls: [ './app.component.css' ]
 })
 export class AppComponent {
+  private completed$ = new Subject<any>();
+
   private buildProgress = { source: new BehaviorSubject<number>(0) };
   private packageProgress = { source: new BehaviorSubject<number>(0) };
   private buildProgressVal = this.buildProgress.source.asObservable().distinctUntilChanged();
@@ -93,8 +95,49 @@ export class AppComponent {
         () => console.log('repeat poll done')
       );
   }
+
+  startStream() {
+    Observable.timer(0, 250)
+      .takeUntil(this.completed$)
+      .switchMap(v => {
+        return Observable.of(`One: ${v}`)
+      })
+      .subscribe(
+        res => console.log(res),
+        err => console.error(err),
+        () => console.log('done one')
+      );
+
+    Observable.timer(0, 500)
+      .takeUntil(this.completed$)
+      .switchMap(v => {
+        return Observable.of(`Two: ${v}`)
+      })
+      .subscribe(
+        res => console.log(res),
+        err => console.error(err),
+        () => console.log('done two')
+      );
+
+    Observable.timer(0, 1000)
+      .takeUntil(this.completed$)
+      .switchMap(v => {
+        return Observable.of(`Three: ${v}`)
+      })
+      .subscribe(
+        res => console.log(res),
+        err => console.error(err),
+        () => console.log('done three')
+      );
+  }
+  
+  stopUsingTakeUntil() {
+    this.completed$.next();
+    this.completed$.complete();
+  }
   
   ngOnInit() {
+    /*
     Observable.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
       .concatMap(v => Observable.of(v).delay(1000))
       .takeWhile(v => v < 5)
@@ -107,5 +150,6 @@ export class AppComponent {
         err => console.error(err),
         () => console.log('done')
       );
+    */
   }
 }
