@@ -5,3 +5,11 @@
 <br>
 <button (mouseup)="startStream()">Start stream (see console)</button>
 <button (mouseup)="stopUsingTakeUntil()">Stop using `takeUntil()`</button>
+
+<br>
+<br>
+<button (mouseup)="combineLatestSource1$.next('first')">combineLatest Source 1</button>
+<button (mouseup)="combineLatestSource2$.next('second')">combineLatest Source 2</button>
+<button (mouseup)="combineLatestSource3$.next('third')">combineLatest Source 3</button>
+<button (mouseup)="combineLatestSource4$.next('fourth')">combineLatest Source 4</button>
+
